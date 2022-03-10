@@ -5,6 +5,8 @@ import * as Misc from "../misc";
 import Config from "../config";
 import * as ConfigEvent from "../observables/config-event";
 
+Chart.defaults.global.animation.duration = 250;
+
 export let result = new Chart($("#wpmChart"), {
   type: "line",
   data: {
@@ -68,7 +70,7 @@ export let result = new Chart($("#wpmChart"), {
             unique.forEach((wordIndex) => {
               let wordEl = $($("#resultWordsHistory .words .word")[wordIndex]);
               let input = wordEl.attr("input");
-              if (input != undefined)
+              if (input != undefined) {
                 wordEl.append(
                   `<div class="wordInputAfter">${input
                     .replace(/\t/g, "_")
@@ -76,6 +78,7 @@ export let result = new Chart($("#wpmChart"), {
                     .replace(/</g, "&lt")
                     .replace(/>/g, "&gt")}</div>`
                 );
+              }
             });
           } catch {}
         },
@@ -211,11 +214,11 @@ export let accountHistory = new Chart($(".pageAccount #accountHistoryChart"), {
             data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
           if (tooltipItem.datasetIndex !== 0) {
             return `error rate: ${Misc.roundTo2(
-              resultData.y
-            )}%\nacc: ${Misc.roundTo2(100 - resultData.y)}%`;
+              resultData.errorRate
+            )}%\nacc: ${Misc.roundTo2(100 - resultData.errorRate)}%`;
           }
           let label =
-            `${Config.alwaysShowCPM ? "cpm" : "wpm"}: ${tooltipItem.yLabel}` +
+            `${Config.alwaysShowCPM ? "cpm" : "wpm"}: ${resultData.wpm}` +
             "\n" +
             `raw: ${resultData.raw}` +
             "\n" +
@@ -737,7 +740,7 @@ export async function updateColors(chart) {
   //   },
   // });
 
-  chart.update({ duration: 250 });
+  chart.update();
 }
 
 Chart.prototype.updateColors = function () {

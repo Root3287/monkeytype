@@ -1,8 +1,5 @@
-// @ts-ignore
 import * as UpdateConfig from "../config";
-// @ts-ignore
 import * as ManualRestart from "../test/manual-restart-tracker";
-// @ts-ignore
 import * as TestLogic from "../test/test-logic";
 import * as Notifications from "../elements/notifications";
 
@@ -13,7 +10,7 @@ export function show(): void {
       .css("opacity", 0)
       .removeClass("hidden")
       .animate({ opacity: 1 }, 100, () => {
-        $("#customWordAmountPopup input").focus().select();
+        $("#customWordAmountPopup input").trigger("focus").select();
       });
   }
 }
@@ -39,7 +36,7 @@ function apply(): void {
   const val = parseInt($("#customWordAmountPopup input").val() as string);
 
   if (val !== null && !isNaN(val) && val >= 0) {
-    UpdateConfig.setWordCount(val);
+    UpdateConfig.setWordCount(val as MonkeyTypes.WordsModes);
     ManualRestart.set();
     TestLogic.restart();
     if (val > 2000) {
@@ -58,19 +55,19 @@ function apply(): void {
   hide();
 }
 
-$("#customWordAmountPopupWrapper").click((e) => {
+$("#customWordAmountPopupWrapper").on("click", (e) => {
   if ($(e.target).attr("id") === "customWordAmountPopupWrapper") {
     hide();
   }
 });
 
-$("#customWordAmountPopup input").keypress((e) => {
-  if (e.keyCode == 13) {
+$("#customWordAmountPopup input").on("keypress", (e) => {
+  if (e.key === "Enter") {
     apply();
   }
 });
 
-$("#customWordAmountPopup .button").click(() => {
+$("#customWordAmountPopup .button").on("click", () => {
   apply();
 });
 
@@ -81,7 +78,7 @@ $(document).on("click", "#top .config .wordCount .text-button", (e) => {
   }
 });
 
-$(document).keydown((event) => {
+$(document).on("keydown", (event) => {
   if (
     event.key === "Escape" &&
     !$("#customWordAmountPopupWrapper").hasClass("hidden")

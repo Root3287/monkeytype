@@ -117,7 +117,7 @@ class Notification {
                   );
                 }
               );
-            $(`#notificationCenter .notif[id='${this.id}']`).click(() => {
+            $(`#notificationCenter .notif[id='${this.id}']`).on("click", () => {
               this.hide();
               this.closeCallback();
             });
@@ -147,7 +147,7 @@ class Notification {
             <i class="fas fa-fw fa-times"></i>
           </div>
           `
-              : `<div style="margin-right: 2rem;">${icon}</div>`
+              : `<div class="righticon">${icon}</div>`
           }
         </div>
       </div>
@@ -159,10 +159,13 @@ class Notification {
       );
       $("#notificationCenter").css("margin-top", height + "px");
       if (this.duration >= 0) {
-        $(`#bannerCenter .banner[id='${this.id}'] .closeButton`).click(() => {
-          this.hide();
-          this.closeCallback();
-        });
+        $(`#bannerCenter .banner[id='${this.id}'] .closeButton`).on(
+          "click",
+          () => {
+            this.hide();
+            this.closeCallback();
+          }
+        );
       }
     }
     if (this.duration > 0) {
@@ -230,7 +233,7 @@ export function addBanner(
   level = -1,
   customIcon = "bullhorn",
   sticky = false,
-  closeCallback: () => void
+  closeCallback?: () => void
 ): void {
   // notificationHistory.push(
   new Notification(

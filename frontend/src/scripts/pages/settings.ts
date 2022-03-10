@@ -1,30 +1,18 @@
-// @ts-ignore
 import SettingsGroup from "../settings/settings-group";
-// @ts-ignore
 import Config, * as UpdateConfig from "../config";
-// @ts-ignore
 import * as Sound from "../controllers/sound-controller";
-// @ts-ignore
 import * as Misc from "../misc";
-// @ts-ignore
-import layouts from "../test/layouts";
-// @ts-ignore
 import * as DB from "../db";
-// @ts-ignore
 import * as Funbox from "../test/funbox";
-// @ts-ignore
 import * as TagController from "../controllers/tag-controller";
-// @ts-ignore
 import * as PresetController from "../controllers/preset-controller";
-// @ts-ignore
 import * as ThemePicker from "../settings/theme-picker";
 import * as Notifications from "../elements/notifications";
 import * as ImportExportSettingsPopup from "../popups/import-export-settings-popup";
-import * as CustomThemePopup from "../popups/custom-theme-popup";
 import * as ConfigEvent from "../observables/config-event";
 import * as ActivePage from "../states/active-page";
+import * as ApeKeysPopup from "../popups/ape-keys-popup";
 import Page from "./page";
-import * as MonkeyTypes from "../types/interfaces";
 
 type SettingsGroups = {
   [key: string]: SettingsGroup;
@@ -70,6 +58,11 @@ async function initGroups(): Promise<void> {
   groups["showTimerProgress"] = new SettingsGroup(
     "showTimerProgress",
     UpdateConfig.setShowTimerProgress,
+    "button"
+  );
+  groups["showAvg"] = new SettingsGroup(
+    "showAvg",
+    UpdateConfig.setShowAvg,
     "button"
   );
   groups["keymapMode"] = new SettingsGroup(
@@ -219,6 +212,11 @@ async function initGroups(): Promise<void> {
   groups["startGraphsAtZero"] = new SettingsGroup(
     "startGraphsAtZero",
     UpdateConfig.setStartGraphsAtZero,
+    "button"
+  );
+  groups["autoSwitchTheme"] = new SettingsGroup(
+    "autoSwitchTheme",
+    UpdateConfig.setAutoSwitchTheme,
     "button"
   );
   groups["randomTheme"] = new SettingsGroup(
@@ -388,10 +386,9 @@ async function initGroups(): Promise<void> {
 export function reset(): void {
   $(".pageSettings .section.themes .favThemes.buttons").empty();
   $(".pageSettings .section.themes .allThemes.buttons").empty();
+  $(".pageSettings .section.themes .allCustomThemes.buttons").empty();
   $(".pageSettings .section.languageGroups .buttons").empty();
-  $(".pageSettings .section.layout select").empty().select2("destroy");
-  $(".pageSettings .section.keymapLayout select").empty().select2("destroy");
-  $(".pageSettings .section.language select").empty().select2("destroy");
+  $(".pageSettings select").empty().select2("destroy");
   $(".pageSettings .section.funbox .buttons").empty();
   $(".pageSettings .section.fontFamily .buttons").empty();
 }
@@ -416,28 +413,61 @@ export async function fillSettingsPage(): Promise<void> {
     langComboBox += `</optgroup>`;
     languageEl.append(langComboBox);
   });
-  languageEl.select2();
+  languageEl.select2({
+    width: "100%",
+  });
 
   const layoutEl = $(".pageSettings .section.layout select").empty();
-  Object.keys(layouts).forEach((layout) => {
+  layoutEl.append(`<option value='default'>off</option>`);
+  Object.keys(await Misc.getLayoutsList()).forEach((layout) => {
     layoutEl.append(
-      `<option value='${layout}'>${
-        layout === "default" ? "off" : layout.replace(/_/g, " ")
-      }</option>`
+      `<option value='${layout}'>${layout.replace(/_/g, " ")}</option>`
     );
   });
-  layoutEl.select2();
+  layoutEl.select2({
+    width: "100%",
+  });
 
   const keymapEl = $(".pageSettings .section.keymapLayout select").empty();
   keymapEl.append(`<option value='overrideSync'>emulator sync</option>`);
-  Object.keys(layouts).forEach((layout) => {
+  Object.keys(await Misc.getLayoutsList()).forEach((layout) => {
     if (layout.toString() != "default") {
       keymapEl.append(
         `<option value='${layout}'>${layout.replace(/_/g, " ")}</option>`
       );
     }
   });
-  keymapEl.select2();
+  keymapEl.select2({
+    width: "100%",
+  });
+
+  const themeEl1 = $(
+    ".pageSettings .section.autoSwitchThemeInputs select.light"
+  ).empty();
+  const themeEl2 = $(
+    ".pageSettings .section.autoSwitchThemeInputs select.dark"
+  ).empty();
+  for (const theme of await Misc.getThemesList()) {
+    themeEl1.append(
+      `<option value='${theme.name}'>${theme.name.replace(/_/g, " ")}</option>`
+    );
+    themeEl2.append(
+      `<option value='${theme.name}'>${theme.name.replace(/_/g, " ")}</option>`
+    );
+  }
+  themeEl1.select2({
+    width: "100%",
+  });
+  themeEl2.select2({
+    width: "100%",
+  });
+
+  $(`.pageSettings .section.autoSwitchThemeInputs select.light`)
+    .val(Config.themeLight)
+    .trigger("change.select2");
+  $(`.pageSettings .section.autoSwitchThemeInputs select.dark`)
+    .val(Config.themeDark)
+    .trigger("change.select2");
 
   const funboxEl = $(".pageSettings .section.funbox .buttons").empty();
   funboxEl.append(`<div class="funbox button" funbox='none'>none</div>`);
@@ -600,7 +630,7 @@ function setActiveFunboxButton(): void {
 function refreshTagsSettingsSection(): void {
   if (firebase.auth().currentUser !== null && DB.getSnapshot() !== null) {
     const tagsEl = $(".pageSettings .section.tags .tagsList").empty();
-    DB.getSnapshot().tags.forEach((tag: MonkeyTypes.Tag) => {
+    DB.getSnapshot().tags?.forEach((tag) => {
       // let tagPbString = "No PB found";
       // if (tag.pb != undefined && tag.pb > 0) {
       //   tagPbString = `PB: ${tag.pb}`;
@@ -635,7 +665,7 @@ function refreshTagsSettingsSection(): void {
 function refreshPresetsSettingsSection(): void {
   if (firebase.auth().currentUser !== null && DB.getSnapshot() !== null) {
     const presetsEl = $(".pageSettings .section.presets .presetsList").empty();
-    DB.getSnapshot().presets.forEach((preset: MonkeyTypes.Preset) => {
+    DB.getSnapshot().presets?.forEach((preset: MonkeyTypes.Preset) => {
       presetsEl.append(`
       <div class="buttons preset" id="${preset._id}">
         <div class="button presetButton">
@@ -675,7 +705,7 @@ export function update(): void {
   refreshPresetsSettingsSection();
   // LanguagePicker.setActiveGroup(); Shifted from grouped btns to combo-box
   setActiveFunboxButton();
-  ThemePicker.updateActiveTab();
+  ThemePicker.updateActiveTab(true);
   ThemePicker.setCustomInputs(true);
   updateDiscordSection();
   updateAuthSections();
@@ -693,6 +723,18 @@ export function update(): void {
   $(".pageSettings .section.minBurst input.customMinBurst").val(
     Config.minBurstCustomSpeed
   );
+
+  if (Config.autoSwitchTheme) {
+    $(".pageSettings .section.autoSwitchThemeInputs").removeClass("hidden");
+  } else {
+    $(".pageSettings .section.autoSwitchThemeInputs").addClass("hidden");
+  }
+
+  if (Config.customBackground !== "") {
+    $(".pageSettings .section.customBackgroundFilter").removeClass("hidden");
+  } else {
+    $(".pageSettings .section.customBackgroundFilter").addClass("hidden");
+  }
 }
 
 function toggleSettingsGroup(groupName: string): void {
@@ -836,8 +878,8 @@ $(document).on("click", ".pageSettings .section.minBurst .button.save", () => {
 
 //funbox
 $(document).on("click", ".pageSettings .section.funbox .button", (e) => {
-  const funbox = $(e.currentTarget).attr("funbox");
-  const type = $(e.currentTarget).attr("type");
+  const funbox = <string>$(e.currentTarget).attr("funbox");
+  const type = <MonkeyTypes.FunboxObjectType>$(e.currentTarget).attr("type");
   Funbox.setFunbox(funbox, type);
   setActiveFunboxButton();
 });
@@ -848,7 +890,7 @@ $(document).on(
   ".pageSettings .section.tags .tagsList .tag .tagButton",
   (e) => {
     const target = e.currentTarget;
-    const tagid = $(target).parent(".tag").attr("id");
+    const tagid = $(target).parent(".tag").attr("id") as string;
     TagController.toggle(tagid);
     $(target).toggleClass("active");
   }
@@ -859,7 +901,7 @@ $(document).on(
   ".pageSettings .section.presets .presetsList .preset .presetButton",
   (e) => {
     const target = e.currentTarget;
-    const presetid = $(target).parent(".preset").attr("id");
+    const presetid = $(target).parent(".preset").attr("id") as string;
     console.log("Applying Preset");
     configEventDisabled = true;
     PresetController.apply(presetid);
@@ -868,11 +910,11 @@ $(document).on(
   }
 );
 
-$("#importSettingsButton").click(() => {
+$("#importSettingsButton").on("click", () => {
   ImportExportSettingsPopup.show("import");
 });
 
-$("#exportSettingsButton").click(() => {
+$("#exportSettingsButton").on("click", () => {
   const configJSON = JSON.stringify(Config);
   navigator.clipboard.writeText(configJSON).then(
     function () {
@@ -884,31 +926,12 @@ $("#exportSettingsButton").click(() => {
   );
 });
 
-$("#shareCustomThemeButton").click(() => {
-  const share: string[] = [];
-  $.each(
-    $(".pageSettings .section.customTheme [type='color']"),
-    (_, element) => {
-      share.push($(element).attr("value") as string);
-    }
-  );
-
-  const url =
-    "https://monkeytype.com?" +
-    Misc.objectToQueryString({ customTheme: share });
-
-  navigator.clipboard.writeText(url).then(
-    function () {
-      Notifications.add("URL Copied to clipboard", 0);
-    },
-    function () {
-      CustomThemePopup.show(url);
-    }
-  );
+$(".pageSettings .sectionGroupTitle").on("click", (e) => {
+  toggleSettingsGroup($(e.currentTarget).attr("group") as string);
 });
 
-$(".pageSettings .sectionGroupTitle").click((e) => {
-  toggleSettingsGroup($(e.currentTarget).attr("group") as string);
+$(".pageSettings .section.apeKeys #showApeKeysPopup").on("click", () => {
+  ApeKeysPopup.show();
 });
 
 $(".pageSettings .section.customBackgroundSize .inputAndButton .save").on(
@@ -917,18 +940,18 @@ $(".pageSettings .section.customBackgroundSize .inputAndButton .save").on(
     UpdateConfig.setCustomBackground(
       $(
         ".pageSettings .section.customBackgroundSize .inputAndButton input"
-      ).val()
+      ).val() as string
     );
   }
 );
 
 $(".pageSettings .section.customBackgroundSize .inputAndButton input").keypress(
   (e) => {
-    if (e.keyCode == 13) {
+    if (e.key === "Enter") {
       UpdateConfig.setCustomBackground(
         $(
           ".pageSettings .section.customBackgroundSize .inputAndButton input"
-        ).val()
+        ).val() as string
       );
     }
   }
@@ -938,21 +961,29 @@ $(".pageSettings .section.customLayoutfluid .inputAndButton .save").on(
   "click",
   () => {
     UpdateConfig.setCustomLayoutfluid(
-      $(".pageSettings .section.customLayoutfluid .inputAndButton input").val()
-    );
-    Notifications.add("Custom layoutfluid saved", 1);
+      $(
+        ".pageSettings .section.customLayoutfluid .inputAndButton input"
+      ).val() as MonkeyTypes.CustomLayoutFluidSpaces
+    ).then((bool) => {
+      if (bool) {
+        Notifications.add("Custom layoutfluid saved", 1);
+      }
+    });
   }
 );
 
 $(".pageSettings .section.customLayoutfluid .inputAndButton .input").keypress(
   (e) => {
-    if (e.keyCode == 13) {
+    if (e.key === "Enter") {
       UpdateConfig.setCustomLayoutfluid(
         $(
           ".pageSettings .section.customLayoutfluid .inputAndButton input"
-        ).val()
-      );
-      Notifications.add("Custom layoutfluid saved", 1);
+        ).val() as MonkeyTypes.CustomLayoutFluidSpaces
+      ).then((bool) => {
+        if (bool) {
+          Notifications.add("Custom layoutfluid saved", 1);
+        }
+      });
     }
   }
 );
@@ -965,13 +996,37 @@ $(".quickNav .links a").on("click", (e) => {
   isOpen && toggleSettingsGroup(settingsGroup);
 });
 
+$(document).on(
+  "change",
+  `.pageSettings .section.autoSwitchThemeInputs select.light`,
+  (e) => {
+    const target = $(e.currentTarget);
+    if (target.hasClass("disabled") || target.hasClass("no-auto-handle")) {
+      return;
+    }
+    UpdateConfig.setThemeLight(target.val() as string);
+  }
+);
+
+$(document).on(
+  "change",
+  `.pageSettings .section.autoSwitchThemeInputs select.dark`,
+  (e) => {
+    const target = $(e.currentTarget);
+    if (target.hasClass("disabled") || target.hasClass("no-auto-handle")) {
+      return;
+    }
+    UpdateConfig.setThemeDark(target.val() as string);
+  }
+);
+
 let configEventDisabled = false;
 export function setEventDisabled(value: boolean): void {
   configEventDisabled = value;
 }
 ConfigEvent.subscribe((eventKey) => {
   if (configEventDisabled || eventKey === "saveToLocalStorage") return;
-  if (ActivePage.get() === "settings") {
+  if (ActivePage.get() === "settings" && eventKey !== "theme") {
     update();
   }
 });

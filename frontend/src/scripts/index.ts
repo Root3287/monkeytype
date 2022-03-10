@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars */
-//this file should be concatenated at the top of the legacy js files
+// this file should be concatenated at the top of the legacy js files
 
 // @ts-ignore
 import Chart from "chart.js";
@@ -11,19 +10,12 @@ import chartAnnotation from "chartjs-plugin-annotation";
 Chart.plugins.register(chartTrendline);
 Chart.plugins.register(chartAnnotation);
 
-// @ts-ignore
 import * as DB from "./db";
-// @ts-ignore
 import Config from "./config";
-// @ts-ignore
 import * as TestStats from "./test/test-stats";
-// @ts-ignore
 import * as Replay from "./test/replay";
-// @ts-ignore
 import * as TestTimer from "./test/test-timer";
-// @ts-ignore
 import * as Result from "./test/result";
-// @ts-ignore
 import * as TestInput from "./test/test-input";
 import "./controllers/account-controller";
 import { enable } from "./states/glarses-mode";
@@ -43,32 +35,26 @@ import "./popups/mobile-test-config-popup";
 import "./popups/edit-tags-popup";
 import * as Account from "./pages/account";
 
-// @ts-ignore
-global.snapshot = DB.getSnapshot;
+type ExtendedGlobal = typeof globalThis & MonkeyTypes.Global;
 
-// @ts-ignore
-global.config = Config;
+const extendedGlobal = global as ExtendedGlobal;
 
-// @ts-ignore
-global.toggleFilterDebug = Account.toggleFilterDebug;
+extendedGlobal.snapshot = DB.getSnapshot;
 
-// @ts-ignore
-global.glarsesMode = enable;
+extendedGlobal.config = Config;
 
-// @ts-ignore
-global.stats = TestStats.getStats;
+extendedGlobal.toggleFilterDebug = Account.toggleFilterDebug;
 
-// @ts-ignore
-global.replay = Replay.getReplayExport;
+extendedGlobal.glarsesMode = enable;
 
-// @ts-ignore
-global.enableTimerDebug = TestTimer.enableTimerDebug;
+extendedGlobal.stats = TestStats.getStats;
 
-// @ts-ignore
-global.getTimerStats = TestTimer.getTimerStats;
+extendedGlobal.replay = Replay.getReplayExport;
 
-// @ts-ignore
-global.toggleUnsmoothedRaw = Result.toggleUnsmoothedRaw;
+extendedGlobal.enableTimerDebug = TestTimer.enableTimerDebug;
 
-// @ts-ignore
-global.enableSpacingDebug = TestInput.enableSpacingDebug;
+extendedGlobal.getTimerStats = TestTimer.getTimerStats;
+
+extendedGlobal.toggleUnsmoothedRaw = Result.toggleUnsmoothedRaw;
+
+extendedGlobal.enableSpacingDebug = TestInput.enableSpacingDebug;

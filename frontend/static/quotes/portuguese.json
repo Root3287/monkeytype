@@ -8,22 +8,16 @@
   ],
   "quotes": [
     {
-      "text": "A mulher põe no mundo toda a poesia e toda a doçura.",
-      "source": "Alphonse Daudet",
-      "length": 52,
-      "id": 1
-    },
-    {
       "text": "O homem é o único animal que não aprende nada sem ser ensinado: não sabe falar, nem caminhar, nem comer, enfim, não sabe fazer nada no estado natural, a não ser chorar.",
       "source": "Plinio",
       "length": 168,
-      "id": 2
+      "id": 1
     },
     {
       "text": "Esquecer é uma necessidade. A vida é uma lousa, em que o destino, para escrever um novo caso, precisa de apagar o caso escrito.",
       "source": "Machado de Assis",
       "length": 127,
-      "id": 3
+      "id": 2
     },
     {
       "text": "Minha Pátria é minha língua. Pouco se me dá que Portugal seja invadido, desde que não mexam comigo.",
@@ -296,9 +290,9 @@
       "id": 47
     },
     {
-      "text": "Nos esquecemos completamente das manias de assassinato e suicídio de Tyler enquanto assitimos a outro arquivo deslizar pela lateral do prédio e cair, as gavetas se abrirem no ar e pilhas de papéis branos serem apanhados por uma corrente de ar e se espalharem no vento.",
+      "text": "Nos esquecemos completamente das manias de assassinato e suicídio de Tyler enquanto assistimos a outro arquivo deslizar pela lateral do prédio e cair, as gavetas se abrirem no ar e pilhas de papéis brancos serem apanhados por uma corrente de ar e se espalharem no vento.",
       "source": "Chuck Palahniuk, Clube da luta",
-      "length": 268,
+      "length": 270,
       "id": 48
     },
     {
@@ -348,6 +342,18 @@
       "source": "Fernando Birri",
       "length": 254,
       "id": 56
+    },
+    {
+      "text": "A mulher põe no mundo toda a poesia e toda a doçura.",
+      "source": "Alphonse Daudet",
+      "length": 52,
+      "id": 57
+    },
+    {
+      "text": "Cientistas começaram a realizar experimentos semelhantes, tentando descobrir modos de ajudar as crianças a aumentar suas capacidades autorregulatórias. Descobriram que lhes ensinar truques simples, como distrair-se fazendo um desenho, ou imaginando uma moldura em volta do marshmallow, para que parecesse mais uma foto e menos uma tentação real, ajudava-lhes a aprender o autocontrole.",
+      "source": "Charles Duhigg, O poder do hábito",
+      "length": 385,
+      "id": 58
     }
   ]
 }
